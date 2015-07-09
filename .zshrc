@@ -21,6 +21,12 @@ alias less='less -X'
 
 PROMPT='%B%n@%m %3~ %#%b '
 
+case $TERM in
+    xterm*)
+        precmd () { print -Pn "\e]0;%n@%m: %~\a" }
+        ;;
+esac
+
 # virtualenvwrapper
 if [[ -e /usr/local/bin/virtualenvwrapper.sh ]]; then
     export WORKON_HOME=~/.virtualenvs
