@@ -49,7 +49,7 @@ alias gs='git status'
 
 # go
 export GOPATH=~/go
-export PATH="/usr/local/go/bin:$HOME/gocode/bin:$PATH"
+export PATH="/usr/local/go/bin:$GOPATH/bin:$PATH"
 
 # docker shortcuts
 function d {
