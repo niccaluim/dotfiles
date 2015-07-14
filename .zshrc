@@ -61,7 +61,7 @@ function d {
     else
 	export X_DOCKER_IP=127.0.0.1
     fi
-    export X_DOCKER_PORT=`docker ps -l | tail -n 1 | cut -d : -f 2 | cut -d - -f 1`
+    export X_DOCKER_PORT=`docker ps -l | tail -n 1 | grep : | cut -d : -f 2 | cut -d - -f 1`
 }
 
 function dcurl {
