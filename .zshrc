@@ -11,7 +11,6 @@ compinit
 
 export PATH="$HOME/bin:$PATH"
 export PAGER='less -X'
-
 if command -v bbeditor >& -; then; export EDITOR=bbeditor; else
 if command -v emacs >& -;    then; export EDITOR=emacs;
 fi; fi
@@ -19,7 +18,20 @@ fi; fi
 alias ls='ls -F'
 alias less='less -X'
 
-PROMPT='%B%n@%m %3~ %#%b '
+function git_branch {
+    git_status=$(git status -b --porcelain 2> /dev/null) || return
+    echo -n ' '
+    n='
+'
+    if [[ $git_status =~ "## ([^$n]+)($n)?" ]]; then
+        if ! [[ -z $match[2] ]]; then
+            echo -n '*'
+        fi
+        echo "${match[1]%...*}"
+    fi
+}
+setopt prompt_subst
+PROMPT='%B%n@%m %3~$(git_branch) %#%b '
 
 case $TERM in
     xterm*)
@@ -48,28 +60,32 @@ alias gp='git pull'
 alias gs='git status'
 
 # go
-export GOPATH=~/go
+export GOPATH=~/workspace
 export PATH="/usr/local/go/bin:$GOPATH/bin:$PATH"
 
 # docker shortcuts
-function d {
+function b2d {
     if command -v boot2docker >& -; then
-	boot2docker up &> /dev/null && \
-	    eval "$(boot2docker shellinit 2>& -)" && \
-	    export X_DOCKER_IP=`echo $DOCKER_HOST | sed 's|tcp://\(.*\):[0-9]*|\1|'` || \
-	    echo error >&2
+        boot2docker up &> /dev/null && \
+            eval "$(boot2docker shellinit 2>& -)" && \
+            export X_DOCKER_IP=`echo $DOCKER_HOST | sed 's|tcp://\(.*\):[0-9]*|\1|'` || \
+            echo error >&2
     else
-	export X_DOCKER_IP=127.0.0.1
+        export X_DOCKER_IP=127.0.0.1
     fi
     export X_DOCKER_PORT=`docker ps -l | tail -n 1 | grep : | cut -d : -f 2 | cut -d - -f 1`
 }
 
 function dcurl {
-    if [[ -z $X_DOCKER_IP ]]; then d; fi
+    if [[ -z $X_DOCKER_IP ]]; then b2d; fi
     curl "${@:1:$(( $# - 1 ))}" "$X_DOCKER_IP:$X_DOCKER_PORT${(P)#}"
 }
 
+if [[ "$(boot2docker status 2>& -)" == "running" ]]; then
+    eval "$(boot2docker shellinit 2>& -)"
+fi
+
 # local config
-if [[ -e ~/zshrc.local ]]; then
+if [[ -e ~/.zshrc.local ]]; then
     source ~/.zshrc.local
 fi
