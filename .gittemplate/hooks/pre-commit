@@ -1,0 +1,22 @@
+#!/bin/zsh
+
+mpid=$$
+exit_status=0
+
+TRAPUSR1() { exit_status=1 }
+
+if command -v gofmt >& -; then
+    (gofmt -w . || kill -USR1 $mpid && (
+        lint=$(golint ./... 2> /dev/null)
+        if ! [[ -z $lint ]]; then
+            echo $lint
+            kill -USR1 $mpid
+        fi)) &
+fi
+
+if command -v flake8 >& -; then
+    (flake8 . || kill -USR1 $mpid) &
+fi
+
+wait
+exit $exit_status
